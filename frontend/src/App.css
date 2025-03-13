@@ -1,38 +1,84 @@
-.App {
+/* General layout and body */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+/* Main container */
+div {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Title */
+h1 {
   text-align: center;
+  color: #333;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Input field and button for new todo */
+input[type="text"] {
+  padding: 10px;
+  margin-right: 10px;
+  width: 70%;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+button {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #4CAF50;
   color: white;
+  cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
+button:hover {
+  background-color: #45a049;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Todo list container */
+ul {
+  padding-left: 0;
+  list-style-type: none;
 }
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+/* Style for completed todos */
+li span {
+  flex: 1;
+}
+
+li span.completed {
+  text-decoration: line-through;
+  color: #888;
+}
+
+li button {
+  margin-left: 10px;
+}
+
+input[type="text"] {
+  flex: 1;
+  margin-right: 10px;
+}
+
