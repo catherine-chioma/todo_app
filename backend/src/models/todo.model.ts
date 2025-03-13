@@ -1,14 +1,19 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
-interface Todo extends Document {
+// Define the Todo interface that extends the Mongoose Document
+export interface ITodo extends Document {
   title: string;
   completed: boolean;
 }
 
-const TodoSchema = new Schema({
+// Define the Todo schema
+const TodoSchema = new Schema<ITodo>({
   title: { type: String, required: true },
   completed: { type: Boolean, default: false },
 });
 
-const TodoModel = mongoose.model<Todo>('Todo', TodoSchema);
-export default TodoModel;
+// Create and export the Todo model as the default export
+const Todo = model<ITodo>('Todo', TodoSchema);
+
+export default Todo;  // Default export
+

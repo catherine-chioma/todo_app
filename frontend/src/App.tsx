@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './App.css'; // Adjust the path if you're using a different file name or location
+import './App.css'; // Importing the CSS file for styling
 
-
-// Todo interface for TypeScript
+// Define a TypeScript interface for the Todo structure to enforce type safety
 interface Todo {
   _id: string;
   title: string;
@@ -11,72 +10,78 @@ interface Todo {
 }
 
 const TodoApp: React.FC = () => {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [newTodo, setNewTodo] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false); // To track loading state
-  const [error, setError] = useState<string | null>(null); // To track error state
+  // State to hold the list of todos, new todo input, loading state, and error message
+  const [todos, setTodos] = useState<Todo[]>([]); // List of todos
+  const [newTodo, setNewTodo] = useState<string>(''); // Input for new todo
+  const [loading, setLoading] = useState<boolean>(false); // Loading state for data fetching
+  const [error, setError] = useState<string | null>(null); // Error state to handle any API errors
   
-  // Fetch all todos on initial render
+  // Fetch all todos from the backend when the component mounts (on initial render)
   useEffect(() => {
-    setLoading(true);
-    axios.get('http://localhost:5000/todos')
+    setLoading(true); // Set loading to true while the data is being fetched
+    axios.get('http://localhost:5000/todos') // GET request to fetch todos from the server
       .then(response => {
-        setTodos(response.data);
-        setLoading(false);
+        setTodos(response.data); // Update state with fetched todos
+        setLoading(false); // Set loading to false after data is fetched
       })
       .catch(error => {
-        console.error(error);
-        setError('Failed to fetch todos');
-        setLoading(false);
+        console.error(error); // Log error for debugging
+        setError('Failed to fetch todos'); // Set error message if the API request fails
+        setLoading(false); // Set loading to false even in case of an error
       });
-  }, []);
+  }, []); // Empty dependency array means this effect runs only once (on mount)
 
-  // Create a new todo
+  // Function to create a new todo
   const createTodo = () => {
     if (!newTodo.trim()) {
-      alert('Please enter a todo!');
+      alert('Please enter a todo!'); // Alert if input is empty
       return;
     }
+    // POST request to create a new todo on the server
     axios.post('http://localhost:5000/todos', { title: newTodo })
       .then(response => {
-        setTodos([...todos, response.data]);
-        setNewTodo('');
+        setTodos([...todos, response.data]); // Add the new todo to the state
+        setNewTodo(''); // Clear the input field after the todo is added
       })
       .catch(error => {
-        console.error(error);
-        setError('Failed to create todo');
+        console.error(error); // Log error for debugging
+        setError('Failed to create todo'); // Set error message if the request fails
       });
   };
 
-  // Update a todo
+  // Function to update an existing todo
   const updateTodo = (id: string, updatedTitle: string) => {
     if (!updatedTitle.trim()) {
-      alert('Please enter a valid title!');
+      alert('Please enter a valid title!'); // Alert if the title is empty
       return;
     }
+    // PUT request to update the title of a specific todo
     axios.put(`http://localhost:5000/todos/${id}`, { title: updatedTitle })
       .then(response => {
+        // Update the state with the new title for the specific todo
         const updatedTodos = todos.map(todo =>
           todo._id === id ? { ...todo, title: updatedTitle } : todo
         );
-        setTodos(updatedTodos);
+        setTodos(updatedTodos); // Set the updated todos state
       })
       .catch(error => {
-        console.error(error);
-        setError('Failed to update todo');
+        console.error(error); // Log error for debugging
+        setError('Failed to update todo'); // Set error message if the request fails
       });
   };
 
-  // Delete a todo
+  // Function to delete a specific todo by its ID
   const deleteTodo = (id: string) => {
+    // DELETE request to remove a specific todo
     axios.delete(`http://localhost:5000/todos/${id}`)
       .then(() => {
+        // Filter out the deleted todo from the state
         const remainingTodos = todos.filter(todo => todo._id !== id);
-        setTodos(remainingTodos);
+        setTodos(remainingTodos); // Update the state with the remaining todos
       })
       .catch(error => {
-        console.error(error);
-        setError('Failed to delete todo');
+        console.error(error); // Log error for debugging
+        setError('Failed to delete todo'); // Set error message if the request fails
       });
   };
 
@@ -84,10 +89,10 @@ const TodoApp: React.FC = () => {
     <div>
       <h1>Todo App</h1>
 
-      {/* Display any errors */}
+      {/* Display any errors that occur */}
       {error && <div style={{ color: 'red' }}>{error}</div>}
 
-      {/* Add a new todo */}
+      {/* Input field to add a new todo */}
       <input 
         type="text" 
         value={newTodo} 
@@ -96,16 +101,20 @@ const TodoApp: React.FC = () => {
       />
       <button onClick={createTodo}>Add Todo</button>
 
-      {/* Display loading state */}
+      {/* Show loading message when fetching data */}
       {loading && <p>Loading...</p>}
 
       <ul>
-        {/* Displaying all todos */}
+        {/* Render each todo item from the todos array */}
         {todos.map(todo => (
           <li key={todo._id}>
-            {/* Display todo title and edit option */}
+            {/* Display the todo title */}
             <span>{todo.title}</span>
-            <button onClick={() => updateTodo(todo._id, prompt('Edit Todo', todo.title) || todo.title)}>Edit</button>
+            {/* Button to edit the todo */}
+            <button onClick={() => updateTodo(todo._id, prompt('Edit Todo', todo.title) || todo.title)}>
+              Edit
+            </button>
+            {/* Button to delete the todo */}
             <button onClick={() => deleteTodo(todo._id)}>Delete</button>
           </li>
         ))}
@@ -115,4 +124,5 @@ const TodoApp: React.FC = () => {
 };
 
 export default TodoApp;
+
 
