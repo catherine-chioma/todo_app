@@ -1,23 +1,23 @@
 import { Request, Response } from 'express';
 import Todo from '../models/todo.model';  // Correct path and filename
- // Correct import for default export
 
 // POST /todos: Create a new todo
 export const createTodo = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { title } = req.body;
+    const { title, description } = req.body; // Description can be optional
+
     if (!title) {
       return res.status(400).json({ message: 'Title is required' });
     }
 
-    // Create a new todo
-    const newTodo = new Todo({
+    // Use Sequelize's create method
+    const newTodo = await Todo.create({
       title,
+      description: description || '', // Default to empty string if not provided
       completed: false, // Default to false
     });
 
-    const savedTodo = await newTodo.save();
-    return res.status(201).json(savedTodo);
+    return res.status(201).json(newTodo);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Failed to create todo' });
@@ -27,7 +27,7 @@ export const createTodo = async (req: Request, res: Response): Promise<Response>
 // GET /todos: Get a list of all todos
 export const getTodos = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const todos = await Todo.find(); // Get all todos from the database
+    const todos = await Todo.findAll(); // Sequelize's findAll method to get all todos
     return res.status(200).json(todos);
   } catch (error) {
     console.error(error);
@@ -39,7 +39,7 @@ export const getTodos = async (req: Request, res: Response): Promise<Response> =
 export const getTodoById = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
-    const todo = await Todo.findById(id);
+    const todo = await Todo.findByPk(id); // Sequelize's findByPk method to find by primary key
 
     if (!todo) {
       return res.status(404).json({ message: 'Todo not found' });
@@ -56,21 +56,25 @@ export const getTodoById = async (req: Request, res: Response): Promise<Response
 export const updateTodo = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
-    const { title, completed } = req.body;
+    const { title, completed, description } = req.body;
 
-    if (!title && completed === undefined) {
-      return res.status(400).json({ message: 'Provide title or completion status to update' });
+    // Ensure at least one field is provided for update
+    if (!title && completed === undefined && !description) {
+      return res.status(400).json({ message: 'Provide title, completion status, or description to update' });
     }
 
-    const updatedTodo = await Todo.findByIdAndUpdate(
-      id,
-      { title, completed },
-      { new: true } // Return the updated document
+    // Use Sequelize's update method
+    const [updated] = await Todo.update(
+      { title, completed, description },
+      { where: { id } }
     );
 
-    if (!updatedTodo) {
+    if (updated === 0) {
       return res.status(404).json({ message: 'Todo not found' });
     }
+
+    // Fetch the updated Todo
+    const updatedTodo = await Todo.findByPk(id);
 
     return res.status(200).json(updatedTodo);
   } catch (error) {
@@ -83,9 +87,13 @@ export const updateTodo = async (req: Request, res: Response): Promise<Response>
 export const deleteTodo = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
-    const deletedTodo = await Todo.findByIdAndDelete(id);
 
-    if (!deletedTodo) {
+    // Use Sequelize's destroy method
+    const deleted = await Todo.destroy({
+      where: { id },
+    });
+
+    if (deleted === 0) {
       return res.status(404).json({ message: 'Todo not found' });
     }
 
@@ -95,6 +103,7 @@ export const deleteTodo = async (req: Request, res: Response): Promise<Response>
     return res.status(500).json({ message: 'Failed to delete todo' });
   }
 };
+
 
 
 

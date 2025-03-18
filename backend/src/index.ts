@@ -1,32 +1,52 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import { createTodo, getTodos, getTodoById, updateTodo, deleteTodo } from './controllers/todo.controller';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'js-yaml';
+import path from 'path'; // Ensure path.join is used for building file paths
+import todoRoutes from './routes/todo.routes'; // Adjust path to todo.routes.ts
+import sequelize from '../config/database'; // Import the sequelize instance for connecting to PostgreSQL
 
+// Load Swagger definition from the YAML file
+const swaggerDocument = YAML.load(path.join(__dirname, 'swagger', 'swagger.yaml')) as object;
 
 const app = express();
 const PORT = 5000;
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost/todo-app')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.log('Error connecting to MongoDB:', err));
+// PostgreSQL connection using Sequelize
+sequelize.authenticate()
+  .then(() => {
+    console.log('Database connection established successfully.');
+  })
+  .catch((err: any) => {
+    console.error('Unable to connect to the database:', err);
+  });
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Todo Routes
-// Todo Routes
-app.post('/todos', createTodo);               // Create a new todo
-app.get('/todos', getTodos);                  // Get all todos
-app.get('/todos/:id', getTodoById);           // Get a todo by ID
-app.put('/todos/:id', updateTodo);            // Update a todo by ID
-app.delete('/todos/:id', deleteTodo);         // Delete a todo by ID
-        // Delete a todo by ID
+// Setup Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Use Todo routes
+app.use('/api', todoRoutes); // Mount Todo routes at `/api`
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

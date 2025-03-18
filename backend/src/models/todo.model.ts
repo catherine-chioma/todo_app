@@ -1,19 +1,53 @@
-import { Schema, model, Document } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import sequelize from '../../config/database';  // Correct import path to your sequelize instance
 
-// Define the Todo interface that extends the Mongoose Document
-export interface ITodo extends Document {
-  title: string;
-  completed: boolean;
+class Todo extends Model {
+  static findByIdAndUpdate(id: string, arg1: { title: any; completed: any; }, arg2: { new: boolean; }) {
+    throw new Error('Method not implemented.');
+  }
+  static findById(id: string) {
+    throw new Error('Method not implemented.');
+  }
+  id!: number;
+  title!: string;
+  completed!: boolean;
+  description?: string;  // Optional field (if you decide to add one)
 }
 
-// Define the Todo schema
-const TodoSchema = new Schema<ITodo>({
-  title: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-});
+Todo.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    completed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,  // Optional field
+    },
+  },
+  {
+    sequelize,
+    modelName: 'Todo',
+    tableName: 'todos',  // The table name
+    timestamps: true,    // Automatically adds 'createdAt' and 'updatedAt'
+  }
+);
 
-// Create and export the Todo model as the default export
-const Todo = model<ITodo>('Todo', TodoSchema);
+export default Todo;
 
-export default Todo;  // Default export
+
+
+
+
+
+
 
