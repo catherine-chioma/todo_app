@@ -17,6 +17,7 @@
   "dependencies": {
     "axios": "^1.8.3",
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "js-yaml": "^4.1.0",
     "pg": "^8.14.1",
@@ -26,6 +27,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.10",
