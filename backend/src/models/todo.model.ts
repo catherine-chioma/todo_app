@@ -1,17 +1,30 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from '../../config/database';  // Correct import path to your sequelize instance
+import sequelize from '../config/database.js';  // Adjusted path to match the correct location
 
 class Todo extends Model {
-  static findByIdAndUpdate(id: string, arg1: { title: any; completed: any; }, arg2: { new: boolean; }) {
-    throw new Error('Method not implemented.');
-  }
-  static findById(id: string) {
-    throw new Error('Method not implemented.');
-  }
   id!: number;
   title!: string;
   completed!: boolean;
-  description?: string;  // Optional field (if you decide to add one)
+  description?: string;
+
+  // Custom method to find by id
+  static async findByIdAndUpdate(id: number, updates: { title?: string, completed?: boolean, description?: string }) {
+    const todo = await this.findByPk(id);  // Sequelize method to find by primary key
+    if (!todo) {
+      throw new Error('Todo not found');
+    }
+    await todo.update(updates);  // Update the todo item
+    return todo;  // Return the updated todo
+  }
+
+  // Custom method to find by id (just retrieves the todo)
+  static async findById(id: number) {
+    const todo = await this.findByPk(id);  // Sequelize method to find by primary key
+    if (!todo) {
+      throw new Error('Todo not found');
+    }
+    return todo;
+  }
 }
 
 Todo.init(
@@ -43,6 +56,7 @@ Todo.init(
 );
 
 export default Todo;
+
 
 
 

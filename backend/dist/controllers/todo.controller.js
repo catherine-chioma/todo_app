@@ -7,91 +7,98 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import Todo from '../models/todo.model'; // Correct path and filename
+import Todo from '../models/todo.model.js'; // Adjust the path if necessary
+// Helper function to send a standardized error response
+const sendErrorResponse = (res, message, statusCode = 500) => {
+    console.error(message); // Log the error message
+    res.status(statusCode).json({ message });
+};
 // POST /todos: Create a new todo
-export const createTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { title, description } = req.body; // Description can be optional
+        const { title, description } = req.body;
         if (!title) {
-            return res.status(400).json({ message: 'Title is required' });
+            res.status(400).json({ message: 'Title is required' });
+            return;
         }
-        // Use Sequelize's create method
         const newTodo = yield Todo.create({
             title,
             description: description || '', // Default to empty string if not provided
             completed: false, // Default to false
         });
-        return res.status(201).json(newTodo);
+        res.status(201).json(newTodo);
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Failed to create todo' });
+        sendErrorResponse(res, 'Failed to create todo');
     }
 });
 // GET /todos: Get a list of all todos
-export const getTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const todos = yield Todo.findAll(); // Sequelize's findAll method to get all todos
-        return res.status(200).json(todos);
+        const todos = yield Todo.findAll();
+        res.status(200).json(todos);
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Failed to fetch todos' });
+        sendErrorResponse(res, 'Failed to fetch todos');
     }
 });
 // GET /todos/:id: Get a single todo by ID
-export const getTodoById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTodoById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const todo = yield Todo.findByPk(id); // Sequelize's findByPk method to find by primary key
+        const todo = yield Todo.findByPk(id);
         if (!todo) {
-            return res.status(404).json({ message: 'Todo not found' });
+            res.status(404).json({ message: 'Todo not found' });
+            return;
         }
-        return res.status(200).json(todo);
+        res.status(200).json(todo);
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Failed to fetch todo' });
+        sendErrorResponse(res, 'Failed to fetch todo');
     }
 });
 // PUT /todos/:id: Update a todo by ID
-export const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { title, completed, description } = req.body;
-        // Ensure at least one field is provided for update
         if (!title && completed === undefined && !description) {
-            return res.status(400).json({ message: 'Provide title, completion status, or description to update' });
+            res.status(400).json({ message: 'Provide title, completion status, or description to update' });
+            return;
         }
-        // Use Sequelize's update method
         const [updated] = yield Todo.update({ title, completed, description }, { where: { id } });
         if (updated === 0) {
-            return res.status(404).json({ message: 'Todo not found' });
+            res.status(404).json({ message: 'Todo not found' });
+            return;
         }
-        // Fetch the updated Todo
         const updatedTodo = yield Todo.findByPk(id);
-        return res.status(200).json(updatedTodo);
+        res.status(200).json(updatedTodo);
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Failed to update todo' });
+        sendErrorResponse(res, 'Failed to update todo');
     }
 });
 // DELETE /todos/:id: Delete a todo by ID
-export const deleteTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        // Use Sequelize's destroy method
         const deleted = yield Todo.destroy({
             where: { id },
         });
         if (deleted === 0) {
-            return res.status(404).json({ message: 'Todo not found' });
+            res.status(404).json({ message: 'Todo not found' });
+            return;
         }
-        return res.status(200).json({ message: 'Todo deleted successfully' });
+        res.status(200).json({ message: 'Todo deleted successfully' });
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Failed to delete todo' });
+        sendErrorResponse(res, 'Failed to delete todo');
     }
 });
+export default {
+    createTodo,
+    getTodos,
+    getTodoById,
+    updateTodo,
+    deleteTodo,
+};

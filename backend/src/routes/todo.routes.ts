@@ -1,74 +1,33 @@
-import { Router, Request, Response } from 'express';
-import { createTodo, getTodos, getTodoById, updateTodo, deleteTodo } from '../controllers/todo.controller';
+import { Router } from 'express';
+import todoController from '../controllers/todo.controller.js'; // Import the todoController object
 
 const router = Router();
 
-router.post('/todos', async (req: Request, res: Response) => {
-  try {
-    await createTodo(req, res);
-  } catch (err) {
-    console.error(err); // Log the error object to understand its structure
-    if (err instanceof Error) {
-      res.status(500).json({ message: 'Something went wrong!', error: err.message });
-    } else {
-      res.status(500).json({ message: 'Something went wrong!', error: 'Unknown error' });
-    }
-  }
-});
+// POST /todos: Create a new todo
+router.post('/todos', todoController.createTodo);
 
-router.get('/todos', async (req: Request, res: Response) => {
-  try {
-    await getTodos(req, res);
-  } catch (err) {
-    console.error(err); // Log the error object to understand its structure
-    if (err instanceof Error) {
-      res.status(500).json({ message: 'Failed to fetch todos', error: err.message });
-    } else {
-      res.status(500).json({ message: 'Failed to fetch todos', error: 'Unknown error' });
-    }
-  }
-});
+// GET /todos: Get a list of all todos
+router.get('/todos', todoController.getTodos);
 
-router.get('/todos/:id', async (req: Request, res: Response) => {
-  try {
-    await getTodoById(req, res);
-  } catch (err) {
-    console.error(err); // Log the error object to understand its structure
-    if (err instanceof Error) {
-      res.status(500).json({ message: 'Failed to fetch todo', error: err.message });
-    } else {
-      res.status(500).json({ message: 'Failed to fetch todo', error: 'Unknown error' });
-    }
-  }
-});
+// GET /todos/:id: Get a single todo by ID
+router.get('/todos/:id', todoController.getTodoById);
 
-router.put('/todos/:id', async (req: Request, res: Response) => {
-  try {
-    await updateTodo(req, res);
-  } catch (err) {
-    console.error(err); // Log the error object to understand its structure
-    if (err instanceof Error) {
-      res.status(500).json({ message: 'Failed to update todo', error: err.message });
-    } else {
-      res.status(500).json({ message: 'Failed to update todo', error: 'Unknown error' });
-    }
-  }
-});
+// PUT /todos/:id: Update a todo by ID
+router.put('/todos/:id', todoController.updateTodo);
 
-router.delete('/todos/:id', async (req: Request, res: Response) => {
-  try {
-    await deleteTodo(req, res);
-  } catch (err) {
-    console.error(err); // Log the error object to understand its structure
-    if (err instanceof Error) {
-      res.status(500).json({ message: 'Failed to delete todo', error: err.message });
-    } else {
-      res.status(500).json({ message: 'Failed to delete todo', error: 'Unknown error' });
-    }
-  }
-});
+// DELETE /todos/:id: Delete a todo by ID
+router.delete('/todos/:id', todoController.deleteTodo);
 
 export default router;
+
+
+
+
+
+
+
+
+
 
 
 

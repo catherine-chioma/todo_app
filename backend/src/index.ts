@@ -1,77 +1,95 @@
-import express from 'express';  // Express is used to build the API server
-import cors from 'cors';  // CORS is used to enable cross-origin requests
-import swaggerUi from 'swagger-ui-express';  // Swagger UI middleware to serve the API docs
-import YAML from 'js-yaml';  // YAML parser to load the Swagger YAML file
-import path from 'path';  // Path module to handle file and directory paths
-import fs from 'fs';  // File system module to read files
-import todoRoutes from './routes/todo.routes';  // Import the routes for the Todo API
-import sequelize from '../config/database';  // Sequelize instance to manage PostgreSQL database connections
+import express from 'express';
+import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'js-yaml';
+import path from 'path';
+import fs from 'fs';
+import todoRoutes from './routes/todo.routes.js';
+import sequelize from './config/database.js';  // Sequelize instance to manage PostgreSQL database connections
+import todoController from './controllers/todo.controller.js';
+import TodoModel from './models/todo.model.js';  // Import TodoModel
+import { fileURLToPath } from 'url';
 
-// Create an Express application instance
+// Get the filename and the directory name equivalent in ES Module scope
+const __filename = fileURLToPath(import.meta.url);  // Gets the full path to the current file
+const __dirname = path.dirname(__filename);  // Derives the directory path
+
 const app = express();
-const PORT = 5000;  // Define the port where the server will run
+const PORT = 5000;
 
-// Load Swagger definition from the YAML file
-// Path to the swagger.yaml file
+// Construct the path for swagger.yaml using __dirname
 const swaggerPath = path.join(__dirname, 'swagger', 'swagger.yaml');
 
-// Log the Swagger path to ensure it's correct (useful for debugging)
-console.log('Swagger path:', swaggerPath);
+// Initialize swaggerDocument as null or an empty object
+let swaggerDocument = null;
 
-// Declare the swaggerDocument as a generic 'any' type for now
-let swaggerDocument: any; 
-
-// Try loading the YAML file using the 'fs' and 'js-yaml' libraries
 try {
-  // Read the YAML file content as a string
   const yamlContent = fs.readFileSync(swaggerPath, 'utf8');
-  
-  // Parse the YAML content into a JavaScript object
-  swaggerDocument = YAML.load(yamlContent); 
-  
-  // If successful, log a success message
-  console.log('Swagger Document loaded successfully');
+  swaggerDocument = YAML.load(yamlContent);  // Load YAML into the swaggerDocument variable
 } catch (error) {
-  // If there is an error loading the YAML file, log the error
   console.error('Error loading swagger.yaml:', error);
 }
 
+// Debugging: Check the current directory and the existence of 'database.js'
+console.log('Current Directory:', __dirname);
+console.log('File Exists:', fs.existsSync(path.join(__dirname, 'config', 'database.js')));
+
 // PostgreSQL connection using Sequelize
-// This checks the connection to the database and logs either success or failure
 sequelize.authenticate()
   .then(() => {
-    console.log('Database connection established successfully.');  // Success message
+    console.log('Database connection established successfully.');
   })
   .catch((err) => {
-    // Log the error if database connection fails
     console.error('Unable to connect to the database:', err);
   });
 
+// Synchronize models with the database
+sequelize.sync({ alter: true }).then(() => {
+  console.log('Database synchronized with the model');
+  // Fetch all todos on startup (example of using TodoModel)
+  TodoModel.findAll().then((todos) => {
+    console.log('All Todos:', todos);
+  }).catch((error) => {
+    console.error('Error fetching todos:', error);
+  });
+}).catch((error) => {
+  console.error('Error synchronizing the database:', error);
+});
+
 // Enable Cross-Origin Resource Sharing (CORS) for all incoming requests
-// This allows the API to be accessed from different origins (useful for frontend applications)
 app.use(cors());
 
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
 
-// Middleware to parse incoming requests with URL-encoded payloads (for form submissions)
+// Middleware to parse incoming requests with URL-encoded payloads
 app.use(express.urlencoded({ extended: true }));
 
-// Setup Swagger UI
-// Mount the Swagger documentation at the '/api-docs' route
-// The swaggerDocument object is passed here to render the API documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Setup Swagger UI if swaggerDocument is successfully loaded
+if (swaggerDocument) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} else {
+  console.error('Swagger document is not loaded.');
+}
 
-// Use the Todo routes defined in 'todo.routes.ts' file
-// These routes are mounted on the '/api' base path, e.g., '/api/todos'
+// Use the Todo routes defined in 'todo.routes.js' file
 app.use('/api', todoRoutes);
 
+// Define a route for the Todo API (GET /todos)
+app.get('/todos', todoController.getTodos);  // Correct usage of getTodos
+
 // Start the Express server on the specified port
-// When the server starts, log the URL where the API is accessible
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);  // Inform the user where the backend is running
-  console.log('Swagger UI is accessible at http://localhost:5000/api-docs');  // Provide the URL to access Swagger UI
+  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log('Swagger UI is accessible at http://localhost:5000/api-docs');
 });
+
+
+
+
+
+
+
 
 
 

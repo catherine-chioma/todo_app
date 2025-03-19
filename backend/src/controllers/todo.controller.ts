@@ -1,108 +1,158 @@
-import { Request, Response } from 'express';
-import Todo from '../models/todo.model';  // Correct path and filename
+import { Request, Response, NextFunction } from 'express';
+import { body, validationResult } from 'express-validator';
+import Todo from '../models/todo.model';  // Ensure correct import path
 
-// POST /todos: Create a new todo
-export const createTodo = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const { title, description } = req.body; // Description can be optional
-
-    if (!title) {
-      return res.status(400).json({ message: 'Title is required' });
-    }
-
-    // Use Sequelize's create method
-    const newTodo = await Todo.create({
-      title,
-      description: description || '', // Default to empty string if not provided
-      completed: false, // Default to false
-    });
-
-    return res.status(201).json(newTodo);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Failed to create todo' });
-  }
+// Helper function to send a standardized error response
+const sendErrorResponse = (res: Response, message: string, statusCode: number = 500): void => {
+  console.error(message);  // Log the error message
+  res.status(statusCode).json({ message });
 };
 
+// POST /todos: Create a new todo
+const createTodo = [
+  // Validation rules
+  body('title').notEmpty().withMessage('Title is required').isString().withMessage('Title must be a string'),
+  body('description').optional().isString().withMessage('Description must be a string'),
+  body('due_date').optional().isISO8601().withMessage('Due date must be a valid ISO 8601 date'),
+
+  // Validation handler
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req);  // Collect validation errors
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });  // If validation fails, send errors
+      return;  // Exit early, no need to proceed further
+    }
+
+    try {
+      const { title, description, due_date } = req.body;
+
+      // Create new todo in the database
+      const newTodo = await Todo.create({
+        title,
+        description: description || '',  // Default to empty string if not provided
+        completed: false,  // Default to false
+        due_date,
+      });
+
+      res.status(201).json(newTodo);  // Successfully created
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to create todo' });  // Handle unexpected errors
+    }
+  }
+];
+
 // GET /todos: Get a list of all todos
-export const getTodos = async (req: Request, res: Response): Promise<Response> => {
+const getTodos = async (req: Request, res: Response): Promise<void> => {
   try {
-    const todos = await Todo.findAll(); // Sequelize's findAll method to get all todos
-    return res.status(200).json(todos);
+    const todos = await Todo.findAll();
+    res.status(200).json(todos);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Failed to fetch todos' });
+    sendErrorResponse(res, 'Failed to fetch todos');
   }
 };
 
 // GET /todos/:id: Get a single todo by ID
-export const getTodoById = async (req: Request, res: Response): Promise<Response> => {
+const getTodoById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const todo = await Todo.findByPk(id); // Sequelize's findByPk method to find by primary key
+    const todo = await Todo.findByPk(id);
 
     if (!todo) {
-      return res.status(404).json({ message: 'Todo not found' });
+      res.status(404).json({ message: 'Todo not found' });
+      return;  // Exit early after sending the response
     }
 
-    return res.status(200).json(todo);
+    res.status(200).json(todo);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Failed to fetch todo' });
+    sendErrorResponse(res, 'Failed to fetch todo');
   }
 };
 
 // PUT /todos/:id: Update a todo by ID
-export const updateTodo = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const { id } = req.params;
-    const { title, completed, description } = req.body;
+const updateTodo = [
+  // Validation rules
+  body('title').optional().isString().withMessage('Title must be a string'),
+  body('description').optional().isString().withMessage('Description must be a string'),
+  body('due_date').optional().isISO8601().withMessage('Due date must be a valid ISO 8601 date'),
+  body('completed').optional().isBoolean().withMessage('Completed must be a boolean'),
 
-    // Ensure at least one field is provided for update
-    if (!title && completed === undefined && !description) {
-      return res.status(400).json({ message: 'Provide title, completion status, or description to update' });
+  // Validation handler
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const errors = validationResult(req);  // Collect validation errors
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });  // If validation fails, send errors
+      return;  // Exit early
     }
 
-    // Use Sequelize's update method
-    const [updated] = await Todo.update(
-      { title, completed, description },
-      { where: { id } }
-    );
+    try {
+      const { id } = req.params;
+      const { title, completed, description, due_date } = req.body;
 
-    if (updated === 0) {
-      return res.status(404).json({ message: 'Todo not found' });
+      // Ensure at least one field is provided to update
+      if (!title && completed === undefined && !description && !due_date) {
+        res.status(400).json({ message: 'Provide at least one field to update' });
+        return;
+      }
+
+      // Update todo in the database
+      const [updated] = await Todo.update(
+        { title, completed, description, due_date },
+        { where: { id } }
+      );
+
+      if (updated === 0) {
+        res.status(404).json({ message: 'Todo not found' });  // Handle case where no todo is updated
+        return;
+      }
+
+      // Fetch the updated todo from the database
+      const updatedTodo = await Todo.findByPk(id);
+      res.status(200).json(updatedTodo);  // Successfully updated
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to update todo' });  // Handle unexpected errors
     }
-
-    // Fetch the updated Todo
-    const updatedTodo = await Todo.findByPk(id);
-
-    return res.status(200).json(updatedTodo);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Failed to update todo' });
   }
-};
+];
 
 // DELETE /todos/:id: Delete a todo by ID
-export const deleteTodo = async (req: Request, res: Response): Promise<Response> => {
+const deleteTodo = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
-    // Use Sequelize's destroy method
     const deleted = await Todo.destroy({
       where: { id },
     });
 
     if (deleted === 0) {
-      return res.status(404).json({ message: 'Todo not found' });
+      res.status(404).json({ message: 'Todo not found' });
+      return;  // Exit after sending the response
     }
 
-    return res.status(200).json({ message: 'Todo deleted successfully' });
+    res.status(200).json({ message: 'Todo deleted successfully' });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Failed to delete todo' });
+    sendErrorResponse(res, 'Failed to delete todo');
   }
 };
+
+export default {
+  createTodo,
+  getTodos,
+  getTodoById,
+  updateTodo,
+  deleteTodo,
+};
+
+
+
+
+
+
+
+
+
+
 
 
 
