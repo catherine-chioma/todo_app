@@ -1,16 +1,22 @@
 import { Sequelize } from 'sequelize';
-// Create a new Sequelize instance
-const sequelize = new Sequelize('postgres', 'postgres', 'newpassword', {
-    host: 'localhost',
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
+
+// Create a new Sequelize instance using the DB_URL environment variable
+const sequelize = new Sequelize(process.env.DB_URL, {
     dialect: 'postgres', // Dialect for PostgreSQL
-    port: 4190, // Default port for PostgreSQL
     logging: false, // Set to true to log SQL queries
 });
+
 sequelize.authenticate()
     .then(() => {
-    console.log('Database connection established successfully.');
-})
+        console.log('Database connection established successfully.');
+    })
     .catch((err) => {
-    console.error('Unable to connect to the database:', err);
-});
+        console.error('Unable to connect to the database:', err);
+    });
+
 export default sequelize;
+
