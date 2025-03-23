@@ -4,9 +4,8 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
-import todoRoutes from './routes/todo.routes.js';
+import todoRoutes from './routes/todo.routes.js'; // Import the routes for todos
 import sequelize from './config/database.js'; // Sequelize instance to manage PostgreSQL database connections
-import todoController from './controllers/todo.controller.js';
 import TodoModel from './models/todo.model.js'; // Import TodoModel
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv'; // Import dotenv to use environment variables
@@ -78,14 +77,12 @@ else {
 }
 
 // Use the Todo routes defined in 'todo.routes.js' file
-app.use('/api', todoRoutes);
-
-// Define a route for the Todo API (GET /todos)
-app.get('/todos', todoController.getTodos); // Correct usage of getTodos
+app.use('/api', todoRoutes);  // Prefix routes with /api
 
 // Start the Express server on the specified port
 app.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
     console.log('Swagger UI is accessible at http://localhost:5000/api-docs');
 });
+
 
