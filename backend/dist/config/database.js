@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
+// Log DB_URL to check if it's loaded correctly
+console.log('DB_URL:', process.env.DB_URL);
+
 // Create a new Sequelize instance using the DB_URL environment variable
 const sequelize = new Sequelize(process.env.DB_URL, {
     dialect: 'postgres', // Dialect for PostgreSQL
