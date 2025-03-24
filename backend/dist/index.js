@@ -6,7 +6,6 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import todoRoutes from './routes/todo.routes.js'; // Import the routes for todos
-import authRoutes from './routes/auth.routes.js'; // Import the authentication routes
 import sequelize from './config/database.js'; // Sequelize instance to manage PostgreSQL database connections
 import TodoModel from './models/todo.model.js'; // Import TodoModel
 import { fileURLToPath } from 'url';
@@ -72,14 +71,12 @@ if (swaggerDocument) {
 // Use the Todo routes defined in 'todo.routes.js' file
 app.use('/api', todoRoutes);  // Prefix routes with /api
 
-// Use the Authentication routes (auth routes) 
-app.use('/auth', authRoutes); // Prefix auth routes with /auth
-
 // Start the Express server
 app.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
     console.log('Swagger UI is accessible at http://localhost:5000/api-docs');
 });
+
 
 
 
