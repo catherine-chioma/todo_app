@@ -1,5 +1,5 @@
-import Todo from '../models/todo.model.js'; // Adjusted path to match the correct location
-import { validationResult } from 'express-validator'; // Import validationResult to check validation errors
+import { body, validationResult } from 'express-validator';
+import Todo from '../models/todo.model.js';  // Ensure correct import path with .js extension
 
 // Helper function to send a standardized error response
 const sendErrorResponse = (res, message, statusCode = 500) => {
@@ -8,107 +8,119 @@ const sendErrorResponse = (res, message, statusCode = 500) => {
 };
 
 // POST /todos: Create a new todo
-const createTodo = async (req, res) => {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    try {
-        const { title, description, completed } = req.body;
-
-        // Create a new Todo item
-        const newTodo = await Todo.create({
-            title,
-            description: description || '', // Default to empty string if not provided
-            completed: completed || false, // Default to false if not provided
-        });
-
-        // Send the newly created Todo item as a response
-        return res.status(201).json(newTodo);
-    } catch (error) {
-        sendErrorResponse(res, 'Failed to create todo');
-    }
-};
+const createTodo = [
+    // Validation rules
+    body('title').notEmpty().withMessage('Title is required').isString().withMessage('Title must be a string'),
+    body('description').optional().isString().withMessage('Description must be a string'),
+    body('due_date').optional().isISO8601().withMessage('Due date must be a valid ISO 8601 date'),
+    // Validation handler
+    (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const errors = validationResult(req); // Collect validation errors
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() }); // If validation fails, send errors
+            return; // Exit early, no need to proceed further
+        }
+        try {
+            const { title, description, due_date } = req.body;
+            // Create new todo in the database
+            const newTodo = yield Todo.create({
+                title,
+                description: description || '', // Default to empty string if not provided
+                completed: false, // Default to false
+                due_date,
+            });
+            res.status(201).json(newTodo); // Successfully created
+        }
+        catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Failed to create todo' }); // Handle unexpected errors
+        }
+    })
+];
 
 // GET /todos: Get a list of all todos
-const getTodos = async (req, res) => {
+const getTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const todos = await Todo.findAll(); // Get all Todo items from the database
-        return res.status(200).json(todos); // Send the list of todos as a response
-    } catch (error) {
+        const todos = yield Todo.findAll();
+        res.status(200).json(todos);
+    }
+    catch (error) {
         sendErrorResponse(res, 'Failed to fetch todos');
     }
-};
+});
 
 // GET /todos/:id: Get a single todo by ID
-const getTodoById = async (req, res) => {
+const getTodoById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const todo = await Todo.findByPk(id); // Find a Todo by its primary key
-
+        const todo = yield Todo.findByPk(id);
         if (!todo) {
-            return res.status(404).json({ message: 'Todo not found' });
+            res.status(404).json({ message: 'Todo not found' });
+            return; // Exit early after sending the response
         }
-
-        return res.status(200).json(todo); // Send the Todo item as a response
-    } catch (error) {
+        res.status(200).json(todo);
+    }
+    catch (error) {
         sendErrorResponse(res, 'Failed to fetch todo');
     }
-};
+});
 
 // PUT /todos/:id: Update a todo by ID
-const updateTodo = async (req, res) => {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    try {
-        const { id } = req.params;
-        const { title, completed, description } = req.body;
-
-        // Ensure at least one field is provided to update
-        if (!title && completed === undefined && !description) {
-            return res.status(400).json({ message: 'Provide title, completion status, or description to update' });
+const updateTodo = [
+    // Validation rules
+    body('title').optional().isString().withMessage('Title must be a string'),
+    body('description').optional().isString().withMessage('Description must be a string'),
+    body('due_date').optional().isISO8601().withMessage('Due date must be a valid ISO 8601 date'),
+    body('completed').optional().isBoolean().withMessage('Completed must be a boolean'),
+    // Validation handler
+    (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const errors = validationResult(req); // Collect validation errors
+        if (!errors.isEmpty()) {
+            res.status(400).json({ errors: errors.array() }); // If validation fails, send errors
+            return; // Exit early
         }
-
-        // Perform the update
-        const [updated] = await Todo.update({ title, completed, description }, { where: { id } });
-
-        if (updated === 0) {
-            return res.status(404).json({ message: 'Todo not found' });
+        try {
+            const { id } = req.params;
+            const { title, completed, description, due_date } = req.body;
+            // Ensure at least one field is provided to update
+            if (!title && completed === undefined && !description && !due_date) {
+                res.status(400).json({ message: 'Provide at least one field to update' });
+                return;
+            }
+            // Update todo in the database
+            const [updated] = yield Todo.update({ title, completed, description, due_date }, { where: { id } });
+            if (updated === 0) {
+                res.status(404).json({ message: 'Todo not found' }); // Handle case where no todo is updated
+                return;
+            }
+            // Fetch the updated todo from the database
+            const updatedTodo = yield Todo.findByPk(id);
+            res.status(200).json(updatedTodo); // Successfully updated
         }
-
-        // Fetch the updated Todo and send it as a response
-        const updatedTodo = await Todo.findByPk(id);
-        return res.status(200).json(updatedTodo);
-    } catch (error) {
-        sendErrorResponse(res, 'Failed to update todo');
-    }
-};
+        catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Failed to update todo' }); // Handle unexpected errors
+        }
+    })
+];
 
 // DELETE /todos/:id: Delete a todo by ID
-const deleteTodo = async (req, res) => {
+const deleteTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-
-        // Attempt to delete the Todo item
-        const deleted = await Todo.destroy({
+        const deleted = yield Todo.destroy({
             where: { id },
         });
-
         if (deleted === 0) {
-            return res.status(404).json({ message: 'Todo not found' });
+            res.status(404).json({ message: 'Todo not found' });
+            return; // Exit after sending the response
         }
-
-        return res.status(200).json({ message: 'Todo deleted successfully' });
-    } catch (error) {
+        res.status(200).json({ message: 'Todo deleted successfully' });
+    }
+    catch (error) {
         sendErrorResponse(res, 'Failed to delete todo');
     }
-};
+});
 
 export default {
     createTodo,
@@ -117,4 +129,3 @@ export default {
     updateTodo,
     deleteTodo,
 };
-
