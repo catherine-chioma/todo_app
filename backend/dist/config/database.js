@@ -1,11 +1,21 @@
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
 
-// External PostgreSQL URL from Render (example)
-const DATABASE_URL = 'postgres://username:password@your-database-host.onrender.com:5432/your-database';
+// Load environment variables from .env file
+dotenv.config();
+
+// Get the DATABASE_URL from the environment
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const sequelize = new Sequelize(DATABASE_URL, {
     dialect: 'postgres',
     logging: false,  // Set to true if you want to log SQL queries
+    dialectOptions: {
+        ssl: {
+            require: true, // Required for Render's SSL connection
+            rejectUnauthorized: false, // Accept self-signed certificates (important for Render)
+        },
+    },
 });
 
 sequelize.authenticate()
@@ -17,4 +27,7 @@ sequelize.authenticate()
     });
 
 export default sequelize;
+
+
+
 
