@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator'; // Import express-validator functions
 import todoController from '../controllers/todo.controller.js'; // Import the todoController object
-import authenticateJWT from '../middleware/auth.middleware.js'; // Import the auth middleware
 
 const router = Router();
 
-// POST /todos: Create a new todo (protected route)
+// POST /todos: Create a new todo
 router.post(
     '/todos',
     [
-        // JWT authentication middleware
-        authenticateJWT, // Protect this route by adding the JWT middleware
-        
         // Validate title - It should not be empty
         body('title')
             .notEmpty().withMessage('Title is required')
@@ -33,8 +29,8 @@ router.post(
     todoController.createTodo
 );
 
-// GET /todos: Get a list of all todos (protected route)
-router.get('/todos', authenticateJWT, todoController.getTodos);
+// GET /todos: Get a list of all todos
+router.get('/todos', todoController.getTodos);
 
 // GET /todos/:id: Get a single todo by ID
 router.get(
@@ -44,11 +40,10 @@ router.get(
         param('id')
             .isInt().withMessage('ID must be an integer')
     ],
-    authenticateJWT, // Protect this route with JWT middleware
     todoController.getTodoById
 );
 
-// PUT /todos/:id: Update a todo by ID (protected route)
+// PUT /todos/:id: Update a todo by ID
 router.put(
     '/todos/:id',
     [
@@ -75,11 +70,10 @@ router.put(
             .optional()
             .isBoolean().withMessage('Completed must be a boolean value'),
     ],
-    authenticateJWT, // Protect this route with JWT middleware
     todoController.updateTodo
 );
 
-// DELETE /todos/:id: Delete a todo by ID (protected route)
+// DELETE /todos/:id: Delete a todo by ID
 router.delete(
     '/todos/:id',
     [
@@ -87,10 +81,10 @@ router.delete(
         param('id')
             .isInt().withMessage('ID must be an integer')
     ],
-    authenticateJWT, // Protect this route with JWT middleware
     todoController.deleteTodo
 );
 
 export default router;
+
 
 
