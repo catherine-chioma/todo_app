@@ -1,4 +1,5 @@
-import Todo from '../models/todo.model.js'; // Adjust the path if necessary
+import Todo from '../models/todo.model.js'; // Adjusted path to match the correct location
+import { validationResult } from 'express-validator'; // Import validationResult to check validation errors
 
 // Helper function to send a standardized error response
 const sendErrorResponse = (res, message, statusCode = 500) => {
@@ -8,19 +9,20 @@ const sendErrorResponse = (res, message, statusCode = 500) => {
 
 // POST /todos: Create a new todo
 const createTodo = async (req, res) => {
-    try {
-        const { title, description } = req.body;
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
 
-        // Validate the required fields
-        if (!title) {
-            return res.status(400).json({ message: 'Title is required' });
-        }
+    try {
+        const { title, description, completed } = req.body;
 
         // Create a new Todo item
         const newTodo = await Todo.create({
             title,
             description: description || '', // Default to empty string if not provided
-            completed: false, // Default to false
+            completed: completed || false, // Default to false if not provided
         });
 
         // Send the newly created Todo item as a response
@@ -58,6 +60,12 @@ const getTodoById = async (req, res) => {
 
 // PUT /todos/:id: Update a todo by ID
 const updateTodo = async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     try {
         const { id } = req.params;
         const { title, completed, description } = req.body;
@@ -109,4 +117,3 @@ export default {
     updateTodo,
     deleteTodo,
 };
-

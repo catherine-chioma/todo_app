@@ -30,15 +30,35 @@ Todo.init({
     },
     title: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false, // This field is required
+        validate: {
+            notEmpty: {
+                msg: 'Title cannot be empty' // Custom validation message
+            },
+            len: {
+                args: [1, 255], // Title must be between 1 and 255 characters
+                msg: 'Title must be between 1 and 255 characters'
+            }
+        }
     },
     completed: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: false, // Default to false if not provided
+        validate: {
+            isBoolean: {
+                msg: 'Completed must be a boolean value' // Ensures 'completed' is a boolean
+            }
+        }
     },
     description: {
         type: DataTypes.STRING,
         allowNull: true, // Optional field
+        validate: {
+            len: {
+                args: [0, 500], // Description can be up to 500 characters long
+                msg: 'Description must be less than 500 characters'
+            }
+        }
     },
 }, {
     sequelize,
@@ -48,5 +68,6 @@ Todo.init({
 });
 
 export default Todo;
+
 
 
