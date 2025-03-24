@@ -3,26 +3,22 @@ import sequelize from '../config/database.js'; // Adjusted path to match the cor
 
 class Todo extends Model {
     // Custom method to find by id and update
-    static findByIdAndUpdate(id, updates) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const todo = yield this.findByPk(id); // Sequelize method to find by primary key
-            if (!todo) {
-                throw new Error('Todo not found');
-            }
-            yield todo.update(updates); // Update the todo item
-            return todo; // Return the updated todo
-        });
+    static async findByIdAndUpdate(id, updates) {
+        const todo = await this.findByPk(id); // Sequelize method to find by primary key
+        if (!todo) {
+            throw new Error('Todo not found');
+        }
+        await todo.update(updates); // Update the todo item
+        return todo; // Return the updated todo
     }
 
     // Custom method to find by id (just retrieves the todo)
-    static findById(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const todo = yield this.findByPk(id); // Sequelize method to find by primary key
-            if (!todo) {
-                throw new Error('Todo not found');
-            }
-            return todo;
-        });
+    static async findById(id) {
+        const todo = await this.findByPk(id); // Sequelize method to find by primary key
+        if (!todo) {
+            throw new Error('Todo not found');
+        }
+        return todo;
     }
 }
 
@@ -52,4 +48,5 @@ Todo.init({
 });
 
 export default Todo;
+
 

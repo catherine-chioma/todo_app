@@ -1,100 +1,107 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import Todo from '../models/todo.model.js'; // Adjust the path if necessary
+
 // Helper function to send a standardized error response
 const sendErrorResponse = (res, message, statusCode = 500) => {
     console.error(message); // Log the error message
     res.status(statusCode).json({ message });
 };
+
 // POST /todos: Create a new todo
-const createTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createTodo = async (req, res) => {
     try {
         const { title, description } = req.body;
+
+        // Validate the required fields
         if (!title) {
-            res.status(400).json({ message: 'Title is required' });
-            return;
+            return res.status(400).json({ message: 'Title is required' });
         }
-        const newTodo = yield Todo.create({
+
+        // Create a new Todo item
+        const newTodo = await Todo.create({
             title,
             description: description || '', // Default to empty string if not provided
             completed: false, // Default to false
         });
-        res.status(201).json(newTodo);
-    }
-    catch (error) {
+
+        // Send the newly created Todo item as a response
+        return res.status(201).json(newTodo);
+    } catch (error) {
         sendErrorResponse(res, 'Failed to create todo');
     }
-});
+};
+
 // GET /todos: Get a list of all todos
-const getTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTodos = async (req, res) => {
     try {
-        const todos = yield Todo.findAll();
-        res.status(200).json(todos);
-    }
-    catch (error) {
+        const todos = await Todo.findAll(); // Get all Todo items from the database
+        return res.status(200).json(todos); // Send the list of todos as a response
+    } catch (error) {
         sendErrorResponse(res, 'Failed to fetch todos');
     }
-});
+};
+
 // GET /todos/:id: Get a single todo by ID
-const getTodoById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTodoById = async (req, res) => {
     try {
         const { id } = req.params;
-        const todo = yield Todo.findByPk(id);
+        const todo = await Todo.findByPk(id); // Find a Todo by its primary key
+
         if (!todo) {
-            res.status(404).json({ message: 'Todo not found' });
-            return;
+            return res.status(404).json({ message: 'Todo not found' });
         }
-        res.status(200).json(todo);
-    }
-    catch (error) {
+
+        return res.status(200).json(todo); // Send the Todo item as a response
+    } catch (error) {
         sendErrorResponse(res, 'Failed to fetch todo');
     }
-});
+};
+
 // PUT /todos/:id: Update a todo by ID
-const updateTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateTodo = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, completed, description } = req.body;
+
+        // Ensure at least one field is provided to update
         if (!title && completed === undefined && !description) {
-            res.status(400).json({ message: 'Provide title, completion status, or description to update' });
-            return;
+            return res.status(400).json({ message: 'Provide title, completion status, or description to update' });
         }
-        const [updated] = yield Todo.update({ title, completed, description }, { where: { id } });
+
+        // Perform the update
+        const [updated] = await Todo.update({ title, completed, description }, { where: { id } });
+
         if (updated === 0) {
-            res.status(404).json({ message: 'Todo not found' });
-            return;
+            return res.status(404).json({ message: 'Todo not found' });
         }
-        const updatedTodo = yield Todo.findByPk(id);
-        res.status(200).json(updatedTodo);
-    }
-    catch (error) {
+
+        // Fetch the updated Todo and send it as a response
+        const updatedTodo = await Todo.findByPk(id);
+        return res.status(200).json(updatedTodo);
+    } catch (error) {
         sendErrorResponse(res, 'Failed to update todo');
     }
-});
+};
+
 // DELETE /todos/:id: Delete a todo by ID
-const deleteTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteTodo = async (req, res) => {
     try {
         const { id } = req.params;
-        const deleted = yield Todo.destroy({
+
+        // Attempt to delete the Todo item
+        const deleted = await Todo.destroy({
             where: { id },
         });
+
         if (deleted === 0) {
-            res.status(404).json({ message: 'Todo not found' });
-            return;
+            return res.status(404).json({ message: 'Todo not found' });
         }
-        res.status(200).json({ message: 'Todo deleted successfully' });
-    }
-    catch (error) {
+
+        return res.status(200).json({ message: 'Todo deleted successfully' });
+    } catch (error) {
         sendErrorResponse(res, 'Failed to delete todo');
     }
-});
+};
+
 export default {
     createTodo,
     getTodos,
@@ -102,3 +109,4 @@ export default {
     updateTodo,
     deleteTodo,
 };
+
