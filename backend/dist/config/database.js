@@ -4,17 +4,19 @@ import dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config();
 
-// Log DB_URL to check if it's loaded correctly (Remove in production for security reasons)
-console.log('DB_URL:', process.env.DB_URL);
-
-// Ensure DB_URL is set
-if (!process.env.DB_URL) {
-    console.error('DB_URL environment variable is not set!');
-    process.exit(1); // Exit if DB_URL is not available
+// Ensure DATABASE_URL is set
+if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL environment variable is not set!');
+    process.exit(1); // Exit if DATABASE_URL is not available
 }
 
-// Create a new Sequelize instance using the DB_URL environment variable
-const sequelize = new Sequelize(process.env.DB_URL, {
+// Log DATABASE_URL to check if it's loaded correctly (Remove in production for security reasons)
+if (process.env.NODE_ENV !== 'production') {
+    console.log('DATABASE_URL:', process.env.DATABASE_URL);  // Log only in non-production environments
+}
+
+// Create a new Sequelize instance using the DATABASE_URL environment variable
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres', // Dialect for PostgreSQL
     logging: false, // Set to true to log SQL queries
     dialectOptions: {
@@ -37,5 +39,6 @@ sequelize.authenticate()
 
 // Export the sequelize instance
 export default sequelize;
+
 
 
