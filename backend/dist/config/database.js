@@ -37,8 +37,24 @@ sequelize.authenticate()
         process.exit(1); // Exit process if unable to connect to the DB
     });
 
+// Graceful shutdown on signals
+const shutdown = (signal) => {
+    console.log(`Received ${signal}, closing the database connection...`);
+    sequelize.close().then(() => {
+        console.log('Database connection closed.');
+        process.exit(0);
+    }).catch(err => {
+        console.error('Error closing the database connection:', err);
+        process.exit(1);
+    });
+};
+
+process.on('SIGINT', shutdown);  // For Ctrl+C
+process.on('SIGTERM', shutdown); // For termination signal
+
 // Export the sequelize instance
 export default sequelize;
+
 
 
 
