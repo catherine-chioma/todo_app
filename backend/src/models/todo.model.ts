@@ -1,32 +1,30 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/database.js';  // Adjusted path to match the correct location
+import sequelize from '../config/database';  // Adjusted path to match the correct location
 
+// Define the Todo model
 class Todo extends Model {
-  id!: number;
-  title!: string;
-  completed!: boolean;
-  description?: string;
-
-  // Custom method to find by id
-  static async findByIdAndUpdate(id: number, updates: { title?: string, completed?: boolean, description?: string }) {
-    const todo = await this.findByPk(id);  // Sequelize method to find by primary key
-    if (!todo) {
-      throw new Error('Todo not found');
+    // Custom method to find by id and update
+    static async findByIdAndUpdate(id: number, updates: any) {
+        const todo = await this.findByPk(id);
+        if (!todo) {
+            return null; // Return null if todo not found
+        }
+        await todo.update(updates); // Update the todo item
+        await todo.reload(); // Reload the updated todo from the database
+        return todo; // Return the updated todo
     }
-    await todo.update(updates);  // Update the todo item
-    return todo;  // Return the updated todo
-  }
 
-  // Custom method to find by id (just retrieves the todo)
-  static async findById(id: number) {
-    const todo = await this.findByPk(id);  // Sequelize method to find by primary key
-    if (!todo) {
-      throw new Error('Todo not found');
+    // Custom method to find by id (just retrieves the todo)
+    static async findById(id: number) {
+        const todo = await this.findByPk(id);
+        if (!todo) {
+            return null;  // Return null if todo not found
+        }
+        return todo; // Return the found todo
     }
-    return todo;
-  }
 }
 
+// Initialize the Todo model
 Todo.init(
   {
     id: {
@@ -44,18 +42,31 @@ Todo.init(
     },
     description: {
       type: DataTypes.STRING,
-      allowNull: true,  // Optional field
+      allowNull: true, // Optional field
+    },
+    due_date: {
+      type: DataTypes.DATE,
+      allowNull: true, // Optional field for due date
     },
   },
   {
-    sequelize,
+    sequelize, // Connection instance
     modelName: 'Todo',
-    tableName: 'todos',  // The table name
-    timestamps: true,    // Automatically adds 'createdAt' and 'updatedAt'
+    tableName: 'todos', // Table name in the database
+    timestamps: true, // Enable createdAt and updatedAt fields
   }
 );
 
 export default Todo;
+
+
+
+
+
+
+
+
+
 
 
 

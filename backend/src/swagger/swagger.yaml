@@ -1,102 +1,147 @@
-openapi: 3.0.0
-info:
-  title: Todo API
-  description: A simple API to manage todos
-  version: 1.0.0
-servers:
-  - url: http://localhost:5000
-paths:
-  /todos:
-    get:
-      summary: Get all todos
-      operationId: getTodos
-      tags:
-        - Todos
-      responses:
-        '200':
-          description: Successfully fetched todos
-    post:
-      summary: Create a new todo
-      operationId: createTodo
-      tags:
-        - Todos
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                  description: The title of the todo
-                  example: "Learn Swagger"
-      responses:
-        '201':
-          description: Successfully created a new todo
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Todo API",
+    "description": "A simple API to manage todos",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/todos": {
+      "get": {
+        "summary": "Get all todos",
+        "operationId": "getTodos",
+        "tags": ["Todos"],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched todos"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new todo",
+        "operationId": "createTodo",
+        "tags": ["Todos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "The title of the todo",
+                    "example": "Learn Swagger"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully created a new todo"
+          }
+        }
+      }
+    },
+    "/todos/{id}": {
+      "get": {
+        "summary": "Get a todo by ID",
+        "operationId": "getTodoById",
+        "tags": ["Todos"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the todo to retrieve",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched todo"
+          },
+          "404": {
+            "description": "Todo not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a todo by ID",
+        "operationId": "updateTodo",
+        "tags": ["Todos"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the todo to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "completed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated todo"
+          },
+          "404": {
+            "description": "Todo not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a todo by ID",
+        "operationId": "deleteTodo",
+        "tags": ["Todos"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "The ID of the todo to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully deleted todo"
+          },
+          "404": {
+            "description": "Todo not found"
+          }
+        }
+      }
+    }
+  }
+}
 
-  /todos/{id}:
-    get:
-      summary: Get a todo by ID
-      operationId: getTodoById
-      tags:
-        - Todos
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The ID of the todo to retrieve
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successfully fetched todo
-        '404':
-          description: Todo not found
-
-    put:
-      summary: Update a todo by ID
-      operationId: updateTodo
-      tags:
-        - Todos
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The ID of the todo to update
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                completed:
-                  type: boolean
-      responses:
-        '200':
-          description: Successfully updated todo
-        '404':
-          description: Todo not found
-
-    delete:
-      summary: Delete a todo by ID
-      operationId: deleteTodo
-      tags:
-        - Todos
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The ID of the todo to delete
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successfully deleted todo
-        '404':
-          description: Todo not found
