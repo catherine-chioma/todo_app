@@ -4,10 +4,10 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
-import todoRoutes from './routes/todo.routes.js';
-import sequelize from './config/database.js'; // Sequelize instance to manage PostgreSQL database connections
-import todoController from './controllers/todo.controller.js';
-import TodoModel from './models/todo.model.js'; // Import TodoModel
+import todoRoutes from './routes/todo.routes';
+import sequelize from './config/database';
+import todoController from './controllers/todo.controller';
+import TodoModel from './models/todo.model';
 import { fileURLToPath } from 'url';
 // Get the filename and the directory name equivalent in ES Module scope
 const __filename = fileURLToPath(import.meta.url); // Gets the full path to the current file
@@ -25,9 +25,9 @@ try {
 catch (error) {
     console.error('Error loading swagger.yaml:', error);
 }
-// Debugging: Check the current directory and the existence of 'database.js'
+// Debugging: Check the current directory and the existence of 'database.ts'
 console.log('Current Directory:', __dirname);
-console.log('File Exists:', fs.existsSync(path.join(__dirname, 'config', 'database.js')));
+console.log('File Exists:', fs.existsSync(path.join(__dirname, 'config', 'database.ts')));
 // PostgreSQL connection using Sequelize
 sequelize.authenticate()
     .then(() => {
@@ -61,7 +61,7 @@ if (swaggerDocument) {
 else {
     console.error('Swagger document is not loaded.');
 }
-// Use the Todo routes defined in 'todo.routes.js' file
+// Use the Todo routes defined in 'todo.routes.ts' file
 app.use('/api', todoRoutes);
 // Define a route for the Todo API (GET /todos)
 app.get('/todos', todoController.getTodos); // Correct usage of getTodos

@@ -1,33 +1,19 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env file
-dotenv.config();
-
-// Get the DATABASE_URL from the environment
-const DATABASE_URL = process.env.DATABASE_URL;
-
-const sequelize = new Sequelize(DATABASE_URL, {
+// Use the external database URL provided by Render
+const databaseUrl = process.env.DATABASE_URL || 'postgresql://my_todo_db_vrzv_user:2Rh2wC1bAZjFzFsggIvRNR8BiJO8q6ly@dpg-cvg6tlqj1k6c73abalc0-a.oregon-postgres.render.com/my_todo_db_vrzv';
+// Ensure that the DATABASE_URL is set, throw an error if not
+if (!databaseUrl) {
+    throw new Error("DATABASE_URL environment variable is missing!");
+}
+// Parse the Render PostgreSQL database URL
+const { username, password, host, port, pathname } = new URL(databaseUrl);
+// Extract the database name from the pathname (remove the leading "/")
+const database = pathname.substring(1);
+// Sequelize instance creation using Render's external database URL
+const sequelize = new Sequelize(database, username, password, {
+    host: host,
     dialect: 'postgres',
-    logging: false,  // Set to true if you want to log SQL queries
-    dialectOptions: {
-        ssl: {
-            require: true, // Required for Render's SSL connection
-            rejectUnauthorized: false, // Accept self-signed certificates (important for Render)
-        },
-    },
+    port: parseInt(port), // Ensure the port is parsed as an integer
+    logging: false, // Disable logging for cleaner output; you can change this to `true` for debugging
 });
-
-sequelize.authenticate()
-    .then(() => {
-        console.log('Database connection established successfully.');
-    })
-    .catch((err) => {
-        console.error('Unable to connect to the database:', err);
-    });
-
 export default sequelize;
-
-
-
-

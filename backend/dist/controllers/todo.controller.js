@@ -1,12 +1,19 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { body, validationResult } from 'express-validator';
-import Todo from '../models/todo.model.js';  // Ensure correct import path with .js extension
-
+import Todo from '../models/todo.model'; // Ensure correct import path for TypeScript
 // Helper function to send a standardized error response
 const sendErrorResponse = (res, message, statusCode = 500) => {
     console.error(message); // Log the error message
     res.status(statusCode).json({ message });
 };
-
 // POST /todos: Create a new todo
 const createTodo = [
     // Validation rules
@@ -28,6 +35,8 @@ const createTodo = [
                 description: description || '', // Default to empty string if not provided
                 completed: false, // Default to false
                 due_date,
+                createdAt: undefined,
+                updatedAt: undefined
             });
             res.status(201).json(newTodo); // Successfully created
         }
@@ -37,7 +46,6 @@ const createTodo = [
         }
     })
 ];
-
 // GET /todos: Get a list of all todos
 const getTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -48,7 +56,6 @@ const getTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         sendErrorResponse(res, 'Failed to fetch todos');
     }
 });
-
 // GET /todos/:id: Get a single todo by ID
 const getTodoById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -64,7 +71,6 @@ const getTodoById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         sendErrorResponse(res, 'Failed to fetch todo');
     }
 });
-
 // PUT /todos/:id: Update a todo by ID
 const updateTodo = [
     // Validation rules
@@ -103,7 +109,6 @@ const updateTodo = [
         }
     })
 ];
-
 // DELETE /todos/:id: Delete a todo by ID
 const deleteTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -121,7 +126,6 @@ const deleteTodo = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         sendErrorResponse(res, 'Failed to delete todo');
     }
 });
-
 export default {
     createTodo,
     getTodos,
@@ -129,4 +133,3 @@ export default {
     updateTodo,
     deleteTodo,
 };
-

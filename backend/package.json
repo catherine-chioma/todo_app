@@ -8,7 +8,7 @@
     "watch": "tsc --watch",
     "dev": "tsc && node dist/index.js",
     "build": "tsc",
-    "postbuild": "copyfiles -u 1 ./src/config/database.js ./dist/config/ && copyfiles -u 1 ./src/swagger/swagger.yaml ./dist/swagger/",
+    "postbuild": "tscpaths -p tsconfig.json --src dist && copyfiles -u 1 ./src/config/database.js ./dist/config/ && copyfiles -u 1 ./src/swagger/swagger.yaml ./dist/swagger/",
     "test": "jest"
   },
   "keywords": [],
@@ -36,7 +36,7 @@
     "@types/jest": "^29.5.14",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.13.13",
     "@types/pg": "^8.11.11",
     "@types/swagger-ui-express": "^4.1.8",
     "copyfiles": "^2.4.1",
@@ -44,6 +44,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
+    "tscpaths": "^0.0.9",
     "typescript": "^5.8.2"
   }
 }

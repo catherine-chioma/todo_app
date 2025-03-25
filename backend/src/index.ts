@@ -4,7 +4,7 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
-import todoRoutes from './routes/todo.routes';
+import todoRoutes from './routes/todo.routes.js';
 import sequelize from './config/database';
 import todoController from './controllers/todo.controller';
 import TodoModel from './models/todo.model';
